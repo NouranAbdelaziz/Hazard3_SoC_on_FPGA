@@ -74,7 +74,7 @@ To do this you need:
   5) Then generate the IP and instantiate it instead of the sync_sram module inside the ahb_sync_sram.v (you will find this part done you may want to change the instance name if different)
 
 When you are done, make sure that the post implmentation timing simulation is working and that the gpio wire is toggling. 
-To generate the bit file, click on "generate bitstream" you can find under "PROGRAM AND DEBUG" in the side bar. You can also use the ready bitstream you can find [here]()
+To generate the bit file, click on "generate bitstream" you can find under "PROGRAM AND DEBUG" in the side bar. You can also use the ready bitstream you can find [here](https://github.com/NouranAbdelaziz/Hazard3_SoC_on_FPGA/tree/main/bitstream)
 
 To program the FPGA with the bit file. You can either do it through Vivado by clicking on "program device" under "Open Hardware Target Manager" or you can use Digilent Adept to program the FPGA and use this command:
 ```
