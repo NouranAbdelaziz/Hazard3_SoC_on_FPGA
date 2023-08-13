@@ -50,25 +50,26 @@ To solve this problem, I used a generated block memory sram from Vivado's IP cat
 To do this you need:
   1) Press on the IP catalog button you can find on the left under PROJECT MANAGEMENT
      
-    ![image](https://github.com/NouranAbdelaziz/Hazard3_SoC_on_FPGA/assets/79912650/1e9cdd1d-63d3-41df-8c56-1218f1165254)
+  ![image](https://github.com/NouranAbdelaziz/Hazard3_SoC_on_FPGA/assets/79912650/1e9cdd1d-63d3-41df-8c56-1218f1165254)
 
   2) Choose "block memory generator"
 
-    ![image](https://github.com/NouranAbdelaziz/Hazard3_SoC_on_FPGA/assets/79912650/1b6b78cb-a7bf-4950-ad0c-4343300e2bbc)
+  ![image](https://github.com/NouranAbdelaziz/Hazard3_SoC_on_FPGA/assets/79912650/1b6b78cb-a7bf-4950-ad0c-4343300e2bbc)
 
   3) Configure the RAM as follows (Tick the byte write enable and change the byte size to 8 bits, change the write and read width to 32 and depth to 32768 untick 
       the primitives output register to make the read latency only one clock cycle ) :
 
-    ![image](https://github.com/NouranAbdelaziz/Hazard3_SoC_on_FPGA/assets/79912650/1e941ab9-8550-45b8-b4da-a2d45714ff63)
-    ![image](https://github.com/NouranAbdelaziz/Hazard3_SoC_on_FPGA/assets/79912650/d61730ed-7f3c-45fe-ad7e-b0e892bbcb55)
+  ![image](https://github.com/NouranAbdelaziz/Hazard3_SoC_on_FPGA/assets/79912650/1e941ab9-8550-45b8-b4da-a2d45714ff63)
+    
+  ![image](https://github.com/NouranAbdelaziz/Hazard3_SoC_on_FPGA/assets/79912650/d61730ed-7f3c-45fe-ad7e-b0e892bbcb55)
 
   4) Load the init file and it has to be in coe format. To go from mem to coe press on edit button and set the memory intilization radix to be 16 (hexadecimial) 
      and the memory intializaion vector to be the words seperated by space. Note: be careful do not include any comments or Xs in the memory vector because this 
      will invalidate the file. Then save and validate the file. 
 
-    ![image](https://github.com/NouranAbdelaziz/Hazard3_SoC_on_FPGA/assets/79912650/df169aa6-3c3a-4769-8532-de905aec45cd)
+  ![image](https://github.com/NouranAbdelaziz/Hazard3_SoC_on_FPGA/assets/79912650/df169aa6-3c3a-4769-8532-de905aec45cd)
 
-    ![image](https://github.com/NouranAbdelaziz/Hazard3_SoC_on_FPGA/assets/79912650/0d46b5b7-e380-4304-bd4b-9d3899edd092)
+  ![image](https://github.com/NouranAbdelaziz/Hazard3_SoC_on_FPGA/assets/79912650/0d46b5b7-e380-4304-bd4b-9d3899edd092)
 
   5) Then generate the IP and instantiate it instead of the sync_sram module inside the ahb_sync_sram.v (you will find this part done you may want to change the instance name if different)
 
