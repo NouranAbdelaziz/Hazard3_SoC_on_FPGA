@@ -93,7 +93,95 @@ The hardware connecetions will be as follows:
 * FPGA PMOD GND will be connected to pin 4 in JTAG FTDI (vref)
 
 ### Step 4: Connect OpenOCD:
+You will find the configuration file for openOCD [here](https://github.com/NouranAbdelaziz/Hazard3_SoC_on_FPGA/blob/main/OpenOCD_cfg/cmodA7-openocd.cfg) This is the configuration that is compatible with hazard3 cpu and the ARM-USB-Tiny-H cable. To connect openOCD run this command
 
+```
+riscv-openocd -f cmodA7-openocd.cfg
+```
+You should see the following output:
+```
+Open On-Chip Debugger 0.12.0+dev-02988-g1997e68dc (2023-07-30-15:31)
+Licensed under GNU GPL v2
+For bug reports, read
+        http://openocd.org/doc/doxygen/bugs.html
+Info : auto-selecting first available session transport "jtag". To override use 'transport select <transport>'.
+Info : clock speed 10 kHz
+Info : JTAG tap: hazard3.cpu tap/device found: 0xdeadbeef (mfg: 0x777 (<unknown>), part: 0xeadb, ver: 0xd)
+Info : [hazard3.cpu] datacount=1 progbufsize=2
+Info : [hazard3.cpu] Disabling abstract command reads from CSRs.
+Info : [hazard3.cpu] Disabling abstract command writes to CSRs.
+Info : [hazard3.cpu] Examined RISC-V core; found 1 harts
+Info : [hazard3.cpu]  XLEN=32, misa=0x40901105
+[hazard3.cpu] Target successfully examined.
+Info : starting gdb server for hazard3.cpu on 3333
+Info : Listening on port 3333 for gdb connections
+Info : Listening on port 6666 for tcl connections
+Info : Listening on port 4444 for telnet connections
+```
+You will also notive that the gpio / FPGA LED stopped toggling because the cpu was halted by openOCD 
 
+### Step 5: Connect GDB and debug:
 
+In the firmware directory run the following command:
+```
+/opt/riscv64-unknown-elf-toolchain-10.2.0-2020.12.8-x86_64-linux-ubuntu14/bin/riscv64-unknown-elf-gdb
+```
+You should see this output:
+```
+GNU gdb (SiFive GDB-Metal 10.1.0-2020.12.7) 10.1
+Copyright (C) 2020 Free Software Foundation, Inc.
+License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.
+Type "show copying" and "show warranty" for details.
+This GDB was configured as "--host=x86_64-linux-gnu --target=riscv64-unknown-elf".
+Type "show configuration" for configuration details.
+For bug reporting instructions, please see:
+<https://github.com/sifive/freedom-tools/issues>.
+Find the GDB manual and other documentation resources online at:
+    <http://www.gnu.org/software/gdb/documentation/>.
 
+For help, type "help".
+Type "apropos word" to search for commands related to "word".
+(gdb)
+```
+Then execute those GDB commands to connect to OpenOCD and refere to the elf file and continue the program 
+
+```
+set confirm off
+target extended-remote localhost:3333
+file gpio_test.elf
+c
+```
+You should get this output 
+
+```
+(gdb) set confirm off
+(gdb) target extended-remote localhost:3333
+Remote debugging using localhost:3333
+warning: No executable has been specified and target does not support
+determining executable automatically.  Try using the "file" command.
+0x00000318 in ?? ()
+(gdb) file gpio_test.elf
+Reading symbols from gpio_test.elf...
+(gdb) c
+Continuing.
+```
+and you should see the LED started toggling again 
+
+You can also execute code line by line as follows:
+
+```
+(gdb) next
+[hazard3.cpu] Found 4 triggers.
+28                              (*(volatile uint32_t*) GPIO_REG_ADDR ) = 0;
+(gdb) next
+27                      for (i = 0; i < 1000; i++) {
+(gdb) next
+28                              (*(volatile uint32_t*) GPIO_REG_ADDR ) = 0;
+(gdb) next
+27                      for (i = 0; i < 1000; i++) {
+(gdb) next
+28                              (*(volatile uint32_t*) GPIO_REG_ADDR ) = 0;
+(gdb) 
+```
