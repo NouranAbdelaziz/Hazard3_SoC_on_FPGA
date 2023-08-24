@@ -26,9 +26,13 @@ You can find all files related to firmware [here](https://github.com/NouranAbdel
 You can run this command to generate the elf file for the gpio test [here](https://github.com/NouranAbdelaziz/Hazard3_SoC_on_FPGA/tree/main/firmware/gpio_test)
 make sure you are in this direcoty ``firmware/gpio_test``
 ```
-riscv32-unknown-elf-gcc -g -march=rv32imc -Os ../common/init.S gpio_test.c -T ../common/memmap.ld -I../common -o gpio_test.elf
+riscv32-unknown-elf-gcc -g -march=rv32imc -Os ../common/crt0.S gpio_test.c -T ../common/linker.ld -I../common -o gpio_test.elf
 ```
-Then to generate the hex file use this command
+Then to generate the hex file use this command (this can be used in verilog simulation)
+```
+riscv32-unknown-elf-objcopy -O verilog gpio_test.elf gpio_test.hex
+```
+Then to generate the bin file use this command (this will be used in programing the flash)
 ```
 riscv32-unknown-elf-objcopy -O verilog gpio_test.elf gpio_test.hex
 ```
