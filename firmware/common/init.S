@@ -82,6 +82,8 @@ j \name
 	jal _start
 	j .halt
 
+
+
 .core1_wait:
 	// IRQs disabled, but soft IRQ unmasked -> soft IRQ will exit WFI.
 	csrci mstatus, 0x8
@@ -215,6 +217,9 @@ weak_handler handle_exception
 weak_handler isr_machine_softirq
 weak_handler isr_machine_timer
 weak_handler isr_external_irq
+
+
+
 
 // You can relax now
 .option pop
