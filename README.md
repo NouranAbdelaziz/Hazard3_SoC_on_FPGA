@@ -34,7 +34,7 @@ riscv32-unknown-elf-objcopy -O verilog gpio_test.elf gpio_test.hex
 ```
 Then to generate the bin file use this command (this will be used in programing the flash)
 ```
-riscv32-unknown-elf-objcopy -O verilog gpio_test.elf gpio_test.hex
+ riscv32-unknown-elf-objcopy -O binary gpio_test.elf gpio_test.bin
 ```
 Then if you want list file use this command 
 ```
