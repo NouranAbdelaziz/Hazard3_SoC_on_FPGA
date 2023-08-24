@@ -128,8 +128,8 @@ wire [W_DATA-1:0] sram_rdata;
 	sram_sync #(
 		.WIDTH(W_DATA),
 		.DEPTH(DEPTH),
-		.BYTE_ENABLE(1),
-		.PRELOAD_FILE(PRELOAD_FILE)
+		.BYTE_ENABLE(1)
+		//.PRELOAD_FILE(PRELOAD_FILE)
 	) sram (
 		.clk   (clk),
 		.wen   (sram_wen),
@@ -139,7 +139,7 @@ wire [W_DATA-1:0] sram_rdata;
 		.rdata (sram_rdata)
 	);
 `else
-	blk_mem_gen_10 gen_sram(	//5  delay 10 //7 gpio write 1 once //10 gpio delay 1000
+	blk_mem_gen_12 gen_sram(	//5  delay 10 //7 gpio write 1 once //10 gpio delay 1000 // 11 gpio delay 100000
 	.clka(clk),
 	.ena(1'b1),
 	.wea(sram_wen),

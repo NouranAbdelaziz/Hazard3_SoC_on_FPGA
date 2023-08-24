@@ -30,9 +30,17 @@ module example_soc #(
 	output wire              uart_tx,
 	input  wire              uart_rx,
 
-	output wire 			 gpio
+	output wire 			 gpio,
+
+	output wire 			fsclk,
+	output wire				fcen,
+	/*inout wire  [3:0]       fdio,
+	output wire [3:0]        fdoe_out*/
+	output wire             MOSI,
+	input wire              MISO
 );
 
+//assign fdoe_out = fdoe;
 //localparam W_ADDR = 32;
 //localparam W_DATA = 32;
 
@@ -348,7 +356,8 @@ hazard3_cpu_1port #(
 // ----------------------------------------------------------------------------
 // Bus fabric
 
-// - 128 kB SRAM at... 0x0000_0000
+// - flash ctrl at...  0x0000_0000
+// - 128 kB SRAM at... 0x2000_0000
 // - System timer at.. 0x4000_0000
 // - UART at.......... 0x4000_4000
 // - GPIO at.......... 0x4000_8000
@@ -368,6 +377,25 @@ wire               sram0_hmastlock;
 wire [W_DATA-1:0]  sram0_hwdata;
 wire [W_DATA-1:0]  sram0_hrdata;
 
+wire               flash_hready_resp;
+wire               flash_hready;
+wire               flash_hresp;
+wire [W_ADDR-1:0]  flash_haddr;
+wire               flash_hwrite;
+wire [1:0]         flash_htrans;
+wire [2:0]         flash_hsize;
+wire [2:0]         flash_hburst;
+wire [3:0]         flash_hprot;
+wire               flash_hmastlock;
+wire [W_DATA-1:0]  flash_hwdata;
+wire [W_DATA-1:0]  flash_hrdata;
+wire [3:0]		fdi;
+wire [3:0]    	fdo;
+wire [3:0]      fdio;
+wire [3:0]	    fdoe;
+
+
+
 wire               bridge_hready_resp;
 wire               bridge_hready;
 wire               bridge_hresp;
@@ -382,9 +410,9 @@ wire [W_DATA-1:0]  bridge_hwdata;
 wire [W_DATA-1:0]  bridge_hrdata;
 
 ahbl_splitter #(
-	.N_PORTS     (2),
-	.ADDR_MAP    (64'h40000000_00000000),
-	.ADDR_MASK   (64'he0000000_e0000000)
+	.N_PORTS     (3),
+	.ADDR_MAP    (96'h40000000_20000000_00000000),
+	.ADDR_MASK   (96'he0000000_e0000000_e0000000)
 ) splitter_u (
 	.clk             (clk),
 	.rst_n           (rst_n),
@@ -403,18 +431,18 @@ ahbl_splitter #(
 	.src_hwdata      (proc_hwdata   ),
 	.src_hrdata      (proc_hrdata   ),
 
-	.dst_hready_resp ({bridge_hready_resp , sram0_hready_resp}),
-	.dst_hready      ({bridge_hready      , sram0_hready     }),
-	.dst_hresp       ({bridge_hresp       , sram0_hresp      }),
-	.dst_haddr       ({bridge_haddr       , sram0_haddr      }),
-	.dst_hwrite      ({bridge_hwrite      , sram0_hwrite     }),
-	.dst_htrans      ({bridge_htrans      , sram0_htrans     }),
-	.dst_hsize       ({bridge_hsize       , sram0_hsize      }),
-	.dst_hburst      ({bridge_hburst      , sram0_hburst     }),
-	.dst_hprot       ({bridge_hprot       , sram0_hprot      }),
-	.dst_hmastlock   ({bridge_hmastlock   , sram0_hmastlock  }),
-	.dst_hwdata      ({bridge_hwdata      , sram0_hwdata     }),
-	.dst_hrdata      ({bridge_hrdata      , sram0_hrdata     })
+	.dst_hready_resp ({bridge_hready_resp , sram0_hready_resp  , flash_hready_resp}),
+	.dst_hready      ({bridge_hready      , sram0_hready       , flash_hready     }),
+	.dst_hresp       ({bridge_hresp       , sram0_hresp        , flash_hresp      }),
+	.dst_haddr       ({bridge_haddr       , sram0_haddr        , flash_haddr      }),
+	.dst_hwrite      ({bridge_hwrite      , sram0_hwrite       , flash_hwrite     }),
+	.dst_htrans      ({bridge_htrans      , sram0_htrans       , flash_htrans     }),
+	.dst_hsize       ({bridge_hsize       , sram0_hsize        , flash_hsize      }),
+	.dst_hburst      ({bridge_hburst      , sram0_hburst       , flash_hburst     }),
+	.dst_hprot       ({bridge_hprot       , sram0_hprot        , flash_hprot      }),
+	.dst_hmastlock   ({bridge_hmastlock   , sram0_hmastlock    , flash_hmastlock  }),
+	.dst_hwdata      ({bridge_hwdata      , sram0_hwdata       , flash_hwdata     }),
+	.dst_hrdata      ({bridge_hrdata      , sram0_hrdata       , flash_hrdata     })
 );
 
 // APB layer
@@ -534,6 +562,38 @@ ahb_sync_sram #(
 	.ahbls_hmastlock   (sram0_hmastlock),
 	.ahbls_hwdata      (sram0_hwdata),
 	.ahbls_hrdata      (sram0_hrdata)
+);
+
+/*assign fdio[0] = fdoe[0] ? fdo[0] : 1'bz;
+assign fdio[1] = fdoe[1] ? fdo[1] : 1'bz;
+assign fdio[2] = fdoe[2] ? fdo[2] : 1'bz;
+assign fdio[3] = fdoe[3] ? fdo[3] : 1'bz;
+
+assign fdi = fdio;*/
+assign flash_hresp = 0;
+
+AHB_FLASH_CTRL flash_ctrl (
+    .HCLK(clk),
+    .HRESETn(rst_n),
+
+
+    .HSEL(1'b1),
+    .HADDR(flash_haddr),
+    .HTRANS(flash_htrans),
+    .HWRITE(flash_hwrite),
+    .HREADY(flash_hready),
+    .HWDATA(flash_hwdata),
+    .HSIZE(flash_hsize),
+    .HREADYOUT(flash_hready_resp),
+    .HRDATA(flash_hrdata),
+
+    .sck(fsclk),
+    .ce_n(fcen),
+    /*.din(fdi),
+    .dout(fdo),
+    .douten(fdoe) */
+	.din (MISO),
+	.dout(MOSI)    
 );
 
 uart_mini uart_u (

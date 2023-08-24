@@ -8,8 +8,10 @@
 `default_nettype none
 
 module fpga_cmodA7 (
+	//input wire        clk_osc_12MHz,
 	input wire        clk_osc,
 
+	input wire        RSTB,
 	// No external trst_n as iCEBreaker can't easily drive it from FTDI, so we
 	// generate a pulse internally from FPGA PoR.
 	input  wire       tck,
@@ -27,8 +29,27 @@ module fpga_cmodA7 (
 	output wire       uart_tx,
 	input  wire       uart_rx,
 
-	output wire       gpio 
+	output wire       gpio,
+
+	output wire 	  fsclk,
+	output wire	      fcen,
+	//inout wire [3:0]  fdio,
+	output wire       MOSI,
+	input wire        MISO,
+
+	output wire       rst_out,
+	output wire       clk_out,
+	output wire       logic_high
+
+	//output wire  [3:0] fdoe_out
 );
+//wire clk_osc;
+
+//clk_wiz_12_to_6MHz clock_div (.clk_out1(clk_osc), .reset(RSTB), .locked(), .clk_in1(clk_osc_12MHz));
+
+assign rst_out = rst_n_sys;
+assign clk_out = clk_osc;
+assign logic_high = 1'b1;
 
 assign mirror_tck = tck;
 assign mirror_tms = tms;
@@ -38,9 +59,10 @@ assign mirror_tdo = tdo;
 wire clk_sys = clk_osc;
 wire rst_n_sys;
 wire trst_n;
+assign rst_n_sys = ~RSTB;
 
-fpga_reset #(
-	.SHIFT (3)
+/*fpga_reset #(
+	.SHIFT (10)
 ) rstgen (
 	.clk         (clk_sys),
 	.force_rst_n (1'b1),
@@ -51,7 +73,7 @@ reset_sync trst_sync_u (
 	.clk       (tck),
 	.rst_n_in  (rst_n_sys),
 	.rst_n_out (trst_n)
-);
+);*/
 
 activity_led #(
 	.WIDTH (1 << 8),
@@ -86,7 +108,16 @@ example_soc #(
 	.uart_tx        (uart_tx),
 	.uart_rx        (uart_rx),
 
-	.gpio			(gpio)
+	.gpio			(gpio),
+
+	.fsclk          (fsclk),
+    .fcen           (fcen),
+	.MOSI           (MOSI),
+	.MISO           (MISO)
+    //.fdio           (fdio),
+
+	//.fdoe_out        (fdoe_out)
+
 );
 
 endmodule
